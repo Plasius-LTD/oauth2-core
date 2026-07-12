@@ -26,6 +26,13 @@ export type OAuth2GrantType = "authorization_code" | "refresh_token" | "client_c
 export type OAuth2ResponseType = "code";
 export type OAuth2CodeChallengeMethod = "S256";
 
+export interface OAuth2JwtAccessTokenHeader {
+  typ: "at+jwt" | "application/at+jwt";
+  alg: string;
+  kid?: string;
+  [key: string]: unknown;
+}
+
 export interface OAuth2AuthorizationServerMetadata {
   issuer: string;
   authorization_endpoint: string;
@@ -81,6 +88,7 @@ export type OAuth2ErrorCode =
   | "invalid_grant"
   | "access_denied"
   | "unauthorized_client"
+  | "unsupported_response_type"
   | "unsupported_grant_type"
   | "invalid_scope"
   | "server_error"
@@ -419,6 +427,30 @@ export function buildBearerChallenge(input: {
   return parameters.length ? `Bearer ${parameters.join(", ")}` : "Bearer";
 }
 
+/** Validate the explicit access-token type and asymmetric signature contract in RFC 9068 §2.1 and §4. */
+export function validateJwtAccessTokenHeader(header: unknown): OAuth2ValidationResult {
+  if (!header || typeof header !== "object" || Array.isArray(header)) {
+    return { valid: false, errors: ["header must be an object"] };
+  }
+  const raw = header as Record<string, unknown>;
+  const errors: string[] = [];
+  if (raw.typ !== "at+jwt" && raw.typ !== "application/at+jwt") {
+    errors.push("typ must be at+jwt or application/at+jwt");
+  }
+  if (
+    typeof raw.alg !== "string" ||
+    raw.alg.length === 0 ||
+    raw.alg === "none" ||
+    raw.alg.startsWith("HS")
+  ) {
+    errors.push("alg must identify an asymmetric signature algorithm");
+  }
+  if (raw.kid !== undefined && (typeof raw.kid !== "string" || raw.kid.length === 0)) {
+    errors.push("kid must be a non-empty string when present");
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 export function validateJwtAccessTokenClaims(
   claims: unknown,
   options: {
@@ -439,6 +471,28 @@ export function validateJwtAccessTokenClaims(
       errors.push(`${key} is required`);
     }
   }
+  for (const key of ["iss", "sub", "jti", "client_id"]) {
+    if (raw[key] !== undefined && (typeof raw[key] !== "string" || raw[key].length === 0)) {
+      errors.push(`${key} must be a non-empty string`);
+    }
+  }
+  const validAudience =
+    (typeof raw.aud === "string" && raw.aud.length > 0) ||
+    (Array.isArray(raw.aud) && raw.aud.length > 0 && raw.aud.every((audience) => typeof audience === "string" && audience.length > 0));
+  if (raw.aud !== undefined && !validAudience) {
+    errors.push("aud must be a string or an array of strings");
+  }
+  for (const key of ["exp", "iat"]) {
+    if (raw[key] !== undefined && typeof raw[key] !== "number") {
+      errors.push(`${key} must be a number`);
+    }
+  }
+  if (raw.nbf !== undefined && typeof raw.nbf !== "number") {
+    errors.push("nbf must be a number when present");
+  }
+  if (raw.scope !== undefined && typeof raw.scope !== "string") {
+    errors.push("scope must be a string when present");
+  }
   if (options.issuer && raw.iss !== options.issuer) {
     errors.push("issuer mismatch");
   }
@@ -448,7 +502,7 @@ export function validateJwtAccessTokenClaims(
       errors.push("audience mismatch");
     }
   }
-  if (typeof raw.exp !== "number" || raw.exp <= now) {
+  if (typeof raw.exp === "number" && raw.exp <= now) {
     errors.push("token expired");
   }
   if (typeof raw.nbf === "number" && raw.nbf > now) {
