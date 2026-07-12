@@ -3,13 +3,19 @@ import {
   buildAuthorizationServerMetadata,
   buildBearerChallenge,
   buildProtectedResourceMetadata,
+  buildRevocationResponse,
   buildTokenErrorResponse,
+  assertValidRedirectUri,
+  base64UrlEncode,
   createPkceS256Challenge,
+  generatePkceVerifier,
+  normalizeScopeString,
   oauth2ConformanceFixtures,
   parseScopeString,
   scopesContainAll,
   validateClientMetadata,
   validateJwtAccessTokenClaims,
+  validateJwtAccessTokenHeader,
   validateRedirectUri,
   validateResourceIdentifier,
   verifyPkceS256Challenge,
@@ -26,6 +32,14 @@ describe("@plasius/oauth2-core", () => {
         challenge: oauth2ConformanceFixtures.pkceS256Challenge,
       }),
     ).toBe(true);
+  });
+
+  it("covers pure encoding and protocol response helpers", () => {
+    expect(base64UrlEncode("✓")).not.toContain("=");
+    expect(generatePkceVerifier()).toHaveLength(43);
+    expect(normalizeScopeString(["mcp:access", "admin.flags.read"])).toBe("mcp:access admin.flags.read");
+    expect(() => assertValidRedirectUri("https://client.example/callback")).not.toThrow();
+    expect(buildRevocationResponse()).toMatchObject({ status: 200, body: "" });
   });
 
   it("parses and validates OAuth scope strings", () => {
@@ -125,6 +139,35 @@ describe("@plasius/oauth2-core", () => {
       },
     );
     expect(result.valid).toBe(true);
+  });
+
+  it("requires the RFC 9068 access-token JWT type", () => {
+    expect(validateJwtAccessTokenHeader({ typ: "at+jwt", alg: "RS256", kid: "key-1" }).valid).toBe(true);
+    expect(validateJwtAccessTokenHeader({ typ: "application/at+jwt", alg: "ES256" }).valid).toBe(true);
+    expect(validateJwtAccessTokenHeader({ typ: "JWT", alg: "RS256" }).errors).toContain(
+      "typ must be at+jwt or application/at+jwt",
+    );
+    expect(validateJwtAccessTokenHeader({ typ: "at+jwt", alg: "none" }).errors).toContain(
+      "alg must identify an asymmetric signature algorithm",
+    );
+    expect(validateJwtAccessTokenHeader(null).errors).toEqual(["header must be an object"]);
+  });
+
+  it("rejects RFC 9068 claims with incorrect primitive types", () => {
+    const result = validateJwtAccessTokenClaims({
+      iss: 12,
+      sub: "admin-1",
+      aud: ["https://plasius.co.uk/api/mcp", 12],
+      exp: "tomorrow",
+      iat: 1_800_000_000,
+      jti: "jti-1",
+      client_id: "client-1",
+    }, { nowEpochSeconds: 1_800_000_000 });
+    expect(result.errors).toEqual(expect.arrayContaining([
+      "iss must be a non-empty string",
+      "aud must be a string or an array of strings",
+      "exp must be a number",
+    ]));
   });
 
   it("reports JWT access-token claim validation failures", () => {

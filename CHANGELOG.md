@@ -3,10 +3,12 @@
 ## Unreleased
 
 - **Added**
-  - (placeholder)
+  - Added RFC 9068 access-token JOSE header validation for `at+jwt` and
+    asymmetric signature algorithms.
 
 - **Changed**
-  - (placeholder)
+  - Strengthened JWT access-token claim primitive validation and added the
+    standard `unsupported_response_type` OAuth error code.
 
 - **Fixed**
   - (placeholder)
