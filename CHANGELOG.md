@@ -3,6 +3,20 @@
 ## Unreleased
 
 - **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [0.1.1] - 2026-07-12
+
+- **Added**
   - Added RFC 9068 access-token JOSE header validation for `at+jwt` and
     asymmetric signature algorithms.
 
@@ -22,3 +36,4 @@
 
 
 [0.1.0]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.0
+[0.1.1]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.1
