@@ -1,6 +1,6 @@
 {
   "name": "@plasius/oauth2-core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Standards-focused OAuth 2.1, PKCE, metadata, and bearer-token primitives for Plasius services.",
   "type": "module",
   "sideEffects": false,
