@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Restore trusted push-only self-hosted CI on the approved quarantined runner group, retain strict install/coverage/artifact gates, and document reviewed branch admission and rollback. Hosted exact-main production OIDC publication remains unchanged.
+
 - **Added**
   - (placeholder)
 
