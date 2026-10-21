@@ -51,7 +51,7 @@ not evaluate remote flags itself.
 ## Development
 
 ```bash
-npm install
+npm ci
 npm run build
 npm test
 npm run test:coverage
@@ -66,11 +66,34 @@ Apache-2.0
 ## Release integrity
 
 CI keeps the administrative contributor registry outside Git and npm package
-artifacts using exact, case-normalised path checks. CI runs on approved
-GitHub-hosted runners for same-repository pull requests and `main`, with
-package-manager cache finalization disabled; fork PR code is denied.
+artifacts using exact, case-normalised path checks. Both CI jobs run only for pushes in this repository on the approved
+`Public CI - Quarantined` group with explicit `[self-hosted, Linux, X64]`
+labels. Pull-request, target, dispatch and reusable-call entry points are
+absent. The group admits only selected repositories and reviewed workflow
+refs; there is no hosted fallback or caller-controlled runner selector.
+Checkout credentials are not persisted, package-manager cache finalization
+is disabled, and jobs have 15/10 minute limits. Strict `npm ci`, lint, types,
+audit, build, 80% LCOV, source/index admission and final package checks remain
+mandatory.
 Publication uses the GitHub-hosted `production` job with Node 24 and a pinned
 npm 11.6.2 client. It is token-free and proceeds only while the prepared SHA
 is the exact `main` head after successful push-triggered CI. Do not dispatch CD
 until the npm trusted-publisher binding is verified.
+
+Before pushing a source branch, review its workflow and temporarily admit only
+that exact branch workflow ref in the existing restricted group. Remove the
+temporary entry after its checks finish and it is merged. For a pipeline-created
+release metadata PR, verify its App author, base, preparation run, head SHA and
+version/lockfile/CHANGELOG-only diff, then admit that exact branch while it is
+available. Preserve it until CI finishes. If required reviews/checks block merge,
+complete them before allowing preparation to continue; never bypass protection.
+Keep the group's selected repositories, public policy and other refs unchanged.
+
+This recovery inherits `platform.public-artifact-integrity.enabled` from Feature
+#1597: enabled permits verified staged promotion; disabled stops promotion;
+rollback disables the affected workflow/distribution channel. The governed
+platform store evaluates the flag, with no package-local flag or capability.
+Source, index and package admission remain mandatory in all three states. Never
+restore the administrative registry, introduce a token fallback or reuse a
+removed npm version. See [ADR-0003](docs/adrs/adr-0003-quarantined-public-ci.md).
 <!-- END PLASIUS RELEASE INTEGRITY -->
