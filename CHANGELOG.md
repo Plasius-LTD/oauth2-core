@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [0.1.8] - 2026-10-21
+
 - Restore trusted push-only self-hosted CI on the approved quarantined runner group, retain strict install/coverage/artifact gates, and document reviewed branch admission and rollback. Hosted exact-main production OIDC publication remains unchanged.
 
 - **Added**
@@ -151,3 +165,4 @@
 [0.1.5]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.5
 [0.1.6]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.6
 [0.1.7]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.7
+[0.1.8]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.8
