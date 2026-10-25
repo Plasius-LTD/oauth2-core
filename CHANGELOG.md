@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- **Added**
+  - (placeholder)
+
+- **Changed**
+  - (placeholder)
+
+- **Fixed**
+  - (placeholder)
+
+- **Security**
+  - (placeholder)
+
+## [0.1.9] - 2026-10-25
+
 - Refresh npm dependency lockfile to current supported stable versions (weekly maintenance, 2026-10-25).
 
 - **Added**
@@ -168,3 +182,4 @@
 [0.1.6]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.6
 [0.1.7]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.7
 [0.1.8]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.8
+[0.1.9]: https://github.com/Plasius-LTD/oauth2-core/releases/tag/v0.1.9
